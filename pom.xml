@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.revolut.payment</groupId>
-	<artifactId>mpneyTarnsfer</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<artifactId>moneyTarnsferApp</artifactId>
+	<version>0.0.1</version>
 	<name>maoneyTrasfer</name>
-	<description>Money transfer api</description>
+	<description>Money transfer App</description>
 
 	<properties>
 		<java.version>1.8</java.version>
