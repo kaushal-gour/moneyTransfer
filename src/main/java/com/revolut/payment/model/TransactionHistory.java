@@ -15,31 +15,34 @@ import javax.persistence.Table;
 public class TransactionHistory {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	
 	private String operation;
 	
 	private String status;
 	
-	private long toAccount;
+	private long toAccountId;
 	 
-	private long fromAccount;
+	private long fromAccountId;
 	
 	private double amount;
 	
 	private Date createdAt;
 	
 	private Date updatedAt;
-
+	
+	
+	
+	public TransactionHistory() {
+		
+	}
 	public long getId() {
 		return id;
 	}
-
 	public void setId(long id) {
 		this.id = id;
 	}
-
 	public String getOperation() {
 		return operation;
 	}
@@ -54,22 +57,6 @@ public class TransactionHistory {
 
 	public void setStatus(String status) {
 		this.status = status;
-	}
-
-	public long getToAccount() {
-		return toAccount;
-	}
-
-	public void setToAccount(long toAccount) {
-		this.toAccount = toAccount;
-	}
-
-	public long getFromAccount() {
-		return fromAccount;
-	}
-
-	public void setFromAccount(long fromAccount) {
-		this.fromAccount = fromAccount;
 	}
 
 	public Date getCreatedAt() {
@@ -95,7 +82,19 @@ public class TransactionHistory {
 	public void setAmount(double amount) {
 		this.amount = amount;
 	}
-
+	
+	public long getToAccountId() {
+		return toAccountId;
+	}
+	public void setToAccountId(long toAccountId) {
+		this.toAccountId = toAccountId;
+	}
+	public long getFromAccountId() {
+		return fromAccountId;
+	}
+	public void setFromAccountId(long fromAccountId) {
+		this.fromAccountId = fromAccountId;
+	}
 	@PrePersist
     protected void prePersist() {
         if (this.createdAt == null) createdAt = new Date();

@@ -35,7 +35,7 @@ public class AccountServiceImpl implements AccountService {
 		account.setBalance(0.00);
 		account.setCurrency(newAccountRequest.getCurrency().toUpperCase());
 		account.setType(newAccountRequest.getType().toUpperCase());
-		return accountRepository.save(account);
+		return accountRepository.saveAndFlush(account);
 
 	}
 
@@ -55,7 +55,7 @@ public class AccountServiceImpl implements AccountService {
 			throw new AccountNotFoundException("Account not found");
 		}
 		account.get().setBalance(account.get().getBalance() + transactionRequest.getAmount());
-		accountRepository.save(account.get());
+		accountRepository.saveAndFlush(account.get());
 		saveTransactionHistory("DEPOSIT", accountId, accountId, transactionRequest.getAmount(), "SUCCESS");
 		return account;
 	}
@@ -74,7 +74,7 @@ public class AccountServiceImpl implements AccountService {
 			throw new LowBalanceException("Insufficient balance");
 		}
 		account.get().setBalance(account.get().getBalance() - transactionRequest.getAmount());
-		accountRepository.save(account.get());
+		accountRepository.saveAndFlush(account.get());
 		
 		saveTransactionHistory("WITHDRAW", accountId, accountId, transactionRequest.getAmount(), "SUCCESS");
 		
@@ -110,14 +110,14 @@ public class AccountServiceImpl implements AccountService {
 		return response;
 	}
 	
-	private void saveTransactionHistory(String opeartion, long toAccountID, long fromAccountId, double ammount, String status) {
+	private void saveTransactionHistory(String opeartion, Long fromAccountId, Long toAccountId, double ammount, String status) {
 		TransactionHistory transactionHistory = new TransactionHistory();
 		transactionHistory.setOperation(opeartion);
-		transactionHistory.setToAccount(toAccountID);
-		transactionHistory.setFromAccount(fromAccountId);
+		transactionHistory.setToAccountId(toAccountId);
+		transactionHistory.setFromAccountId(fromAccountId);
 		transactionHistory.setAmount(ammount);
 		transactionHistory.setStatus(status);
-		transactionHistoryRepository.save(transactionHistory);
+		transactionHistoryRepository.saveAndFlush(transactionHistory);
 	}
 
 }
