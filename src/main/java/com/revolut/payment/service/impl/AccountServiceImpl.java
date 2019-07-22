@@ -13,7 +13,9 @@ import com.revolut.payment.dto.response.FundTransferResponse;
 import com.revolut.payment.exception.AccountNotFoundException;
 import com.revolut.payment.exception.LowBalanceException;
 import com.revolut.payment.model.Account;
+import com.revolut.payment.model.TransactionHistory;
 import com.revolut.payment.repo.AcountRepository;
+import com.revolut.payment.repo.TransactionHistoryRepository;
 import com.revolut.payment.service.AccountService;
 
 @Service
@@ -23,6 +25,9 @@ public class AccountServiceImpl implements AccountService {
 
 	@Autowired
 	AcountRepository accountRepository;
+	
+	@Autowired
+	TransactionHistoryRepository transactionHistoryRepository;
 
 	public Account createAccount(NewAccountRequest newAccountRequest) {
 
@@ -46,10 +51,12 @@ public class AccountServiceImpl implements AccountService {
 		Optional<Account> account = accountRepository.findById(accountId);
 		if (!account.isPresent()) {
 			LOGGER.error("Account not found for accountID: "+accountId);
+			saveTransactionHistory("DEPOSIT", accountId, accountId, transactionRequest.getAmount(), "FAILEd");
 			throw new AccountNotFoundException("Account not found");
 		}
 		account.get().setBalance(account.get().getBalance() + transactionRequest.getAmount());
 		accountRepository.save(account.get());
+		saveTransactionHistory("DEPOSIT", accountId, accountId, transactionRequest.getAmount(), "SUCCESS");
 		return account;
 	}
 
@@ -58,14 +65,19 @@ public class AccountServiceImpl implements AccountService {
 		Optional<Account> account = accountRepository.findById(accountId);
 		if (!account.isPresent()) {
 			LOGGER.error("Account not found for accountID: "+accountId);
+			saveTransactionHistory("WITHDRAW", accountId, accountId, transactionRequest.getAmount(), "FAILED");
 			throw new AccountNotFoundException("Account not found");
 		}
 		if(account.get().getBalance()< transactionRequest.getAmount()) {
 			LOGGER.error("Insufficient balance for  accountID: "+accountId);
+			saveTransactionHistory("WITHDRAW", accountId, accountId, transactionRequest.getAmount(), "FAILED");
 			throw new LowBalanceException("Insufficient balance");
 		}
 		account.get().setBalance(account.get().getBalance() - transactionRequest.getAmount());
 		accountRepository.save(account.get());
+		
+		saveTransactionHistory("WITHDRAW", accountId, accountId, transactionRequest.getAmount(), "SUCCESS");
+		
 		return account;
 	}
 
@@ -75,10 +87,12 @@ public class AccountServiceImpl implements AccountService {
 		Optional<Account> toAccount = accountRepository.findById(toAccountId);
 		if(!fromAccount.isPresent() || !toAccount.isPresent()) {
 			LOGGER.error("Account not found");
+			saveTransactionHistory("FUND_TRANSFER", fromAccountId, toAccountId, transactionRequest.getAmount(), "FAILED");
 			throw new AccountNotFoundException("Account not found");
 		} 
 		if(fromAccount.get().getBalance() < transactionRequest.getAmount()) {
 			LOGGER.error("Insufficient balance");
+			saveTransactionHistory("FUND_TRANSFER", fromAccountId, toAccountId, transactionRequest.getAmount(), "FAILED");
 			throw new LowBalanceException("Insufficient balance");
 		}
 		fromAccount.get().setBalance(fromAccount.get().getBalance() - transactionRequest.getAmount());
@@ -91,7 +105,19 @@ public class AccountServiceImpl implements AccountService {
 		response.setFrom(fromAccount.get());
 		response.setTo(toAccount.get());
 		
+		saveTransactionHistory("FUND_TRANSFER", fromAccountId, toAccountId, transactionRequest.getAmount(), "SUCCESS");
+		
 		return response;
+	}
+	
+	private void saveTransactionHistory(String opeartion, long toAccountID, long fromAccountId, double ammount, String status) {
+		TransactionHistory transactionHistory = new TransactionHistory();
+		transactionHistory.setOperation(opeartion);
+		transactionHistory.setToAccount(toAccountID);
+		transactionHistory.setFromAccount(fromAccountId);
+		transactionHistory.setAmount(ammount);
+		transactionHistory.setStatus(status);
+		transactionHistoryRepository.save(transactionHistory);
 	}
 
 }
