@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.revolut.payment.model.Account;
 
 @Repository
-public interface AcountRepository extends JpaRepository<Account, Long> {
+public interface AcountRepository extends JpaRepository<Account, Long>{
 
 }
